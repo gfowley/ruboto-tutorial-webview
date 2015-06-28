@@ -1,0 +1,62 @@
+<html>
+
+  <head>
+    <script src="../js/tutorial.js"></script>
+  </head>
+
+  <body>
+
+    <h1>Webview Tutorial</h1>
+
+    <h2>Using evaluateJavascript</h2>
+
+    <div id="tutorial-images" ></div>
+    <ul id='tutorial-list'> </ul>
+
+    <h2>Using addJavascriptInterface</h2>
+
+    <div>
+      <table>
+        <tr>
+          <td><button onClick="no_arg()">no_arg()</button></td>
+          <td><button onClick="this.parentElement.nextElementSibling.textContent=no_arg_return()">no_arg_return()</button></td>
+          <td style="width:8em;border-style:solid;border-width:thin;"></td>
+          <td><button onClick="this.parentElement.previousElementSibling.textContent=''">Clear</button></td>
+        </tr>
+        <tr>
+          <td><button onClick="boolean_arg(true)">boolean_arg(true)</button></td>
+          <td><button onClick="this.parentElement.nextElementSibling.textContent=boolean_arg_return(true)">boolean_arg_return(true)</button></td>
+          <td style="width:8em;border-style:solid;border-width:thin;"></td>
+          <td><button onClick="this.parentElement.previousElementSibling.textContent=''">Clear</button></td>
+        </tr>
+        <tr>
+          <td><button onClick="int_arg(123)">int_arg(123)</button></td>
+          <td><button onClick="this.parentElement.nextElementSibling.textContent=int_arg_return(123)">int_arg_return(123)</button></td>
+          <td style="width:8em;border-style:solid;border-width:thin;"></td>
+          <td><button onClick="this.parentElement.previousElementSibling.textContent=''">Clear</button></td>
+        </tr>
+        <tr>
+          <td><button onClick="string_arg('abc')">string_arg("abc")</button></td>
+          <td><button onClick="this.parentElement.nextElementSibling.textContent=string_arg_return('abc')">string_arg_return("abc")</button></td>
+          <td style="width:8em;border-style:solid;border-width:thin;"></td>
+          <td><button onClick="this.parentElement.previousElementSibling.textContent=''">Clear</button></td>
+        </tr>
+        <tr>
+          <td><button onClick="json_arg({'a':1,'b':2})">json_arg({'a':1,'b':2})</button></td>
+          <td><button onClick="this.parentElement.nextElementSibling.textContent=json_arg_return({'a':1,'b':2})">json_arg_return({'a':1,'b':2})</button></td>
+          <td style="width:8em;border-style:solid;border-width:thin;"></td>
+          <td><button onClick="this.parentElement.previousElementSibling.textContent=''">Clear</button></td>
+        </tr>
+        <tr>
+          <td><button onClick="multiple_arg({'a':1,'b':2},'abc',123,true)">multiple_arg({'a':1,'b':2},true,123,'abc')</button></td>
+          <td><button onClick="this.parentElement.nextElementSibling.textContent=multiple_arg_return({'a':1,'b':2},'abc',123,true)">multiple_arg_return({'a':1,'b':2},true,123,'abc')</button></td>
+          <td style="width:8em;border-style:solid;border-width:thin;"></td>
+          <td><button onClick="this.parentElement.previousElementSibling.textContent=''">Clear</button></td>
+        </tr>
+      </table>
+    </div>
+
+  </body>
+
+</html>
+
