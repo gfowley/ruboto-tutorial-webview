@@ -12,14 +12,16 @@
   * [Simple evaluation](#simple-evaluation)
   * [Evaluation of synchronous Javascript with return value](#evaluation-of-synchronous-javascript-with-return-value)
   * [Evaluation of asynchronous Javascript to obtain a value (problem)](#evaluation-of-asynchronous-javascript-to-obtain-a-value-problem)
-0. [Interface between WebView Javascript and application ](#interface-between-webview-javascript-and-application)
-  * [Execute Ruby from WebView Javascript](#execute-ruby-from-webview-javascript)
+0. [Interface between Javascript and application ](#interface-between-javascript-and-application)
+  * [Create JavascriptInterface Java class](#create-javascriptinterface-java-class)
+  * [Execute Ruby from Javascript](#execute-ruby-from-javascript)
   * [Passing parameters from Javascript to Ruby](#passing-parameters-from-javascript-to-ruby)
-  * [Return values from Ruby methods to WebView Javascript](#return-values-from-ruby-methods-to-webview-javascript)
+  * [Return values from Ruby methods to Javascript](#return-values-from-ruby-methods-to-javascript)
   * [Returning values from Ruby to Javascript](#returning-values-from-ruby-to-javascript)
 0. [Evaluation of asynchronous Javascript to obtain a value (solution)](#evaluation-of-asynchronous-javascript-to-obtain-a-value-solution)
   * [Bidirectional approach](#bidirectional-approach)
 0. [Tips](#tips)
+  * [Naming issue](#naming-issue)
   * [URLs for assets and resources](#urls-for-assets-and-resources)
   * [Relative URLs](#relative-urls)
   * [Debugging with Chrome](#debugging-with-chrome)
@@ -29,12 +31,12 @@
 ##  Goal
 This tutorial demonstrates how to use the Android WebView component to display and interact with local content.  Communication between the activity (Ruby) and webview (Javascript) code.  Topics covered include:
 * Content assets and resources
-* Execution of webview Javascript from activity Ruby
+* Execution of Javascript from activity Ruby
 * Execution of synchronous and asynchronous Javascript
-* Execution of activity Ruby from webview Javascript
+* Execution of activity Ruby from Javascript
 * Passing and conversion of arguments between Ruby/Java/Javascript
 * Returning and conversion of values between Ruby/Java/Javascript
-* Tips: URLs, debugging, scaling content, life-cycle
+* Tips: Naming, URLs, debugging, scaling content, life-cycle
 
 ## Requirements
 You should have completed the [[Setting Up a Ruboto Development Environment]] tutorial.
@@ -91,6 +93,8 @@ $ ruboto gen app --package=org.ruboto.webviewtutorial --target=19
 $ cd webviewtutorial
 $ ruboto gen jruby 1.7.19
 ```
+_(See Tip "[Naming issue](#naming-issue)" for package naming convention.)_
+
 Compile and install this default app, verify it runs. 
 
 ## WebView code
@@ -333,14 +337,15 @@ If that line is removed, the incorrect return value is only evident for the firs
 
 It is tempting to try the quick fix of a short delay before returning, but this approach is detrimental to Javascript application and browser performance and degrades the user's experience. A better solution more in keeping with Javascript's asynchronous nature will be presented later.
 
-## Interface between WebView Javascript and application 
+## Interface between Javascript and application 
 WebView supports execution of application code from Javascript via an interface object. The interface object is registered with WebView method `addJavascriptInterface` documented [here](http://developer.android.com/reference/android/webkit/WebView.html#addJavascriptInterface%28java.lang.Object,%20java.lang.String%29).
 
 For Android API > 16 methods of the interface object must be annotated with Java annotation `@JavascriptInterface` to be available for use by Javascript.
 
 Unlike the Ruby callback object provided to the `evaluateJavascript` method, the reflection process used by WebView to find these methods when called from Javascript requires that there be an actual Java object instance of a Java class.
 
-We can create a such a Java class to back a Ruby class in Ruboto as follows for a class `Jsi`:
+### Create JavascriptInterface Java class
+We can create a such a Java class to back a Ruby class in Ruboto as follows; for a class `Jsi`:
 ```shell
 $ ruboto gen subclass java.lang.Object --name=Jsi --method_base=none
 
@@ -350,9 +355,11 @@ Added file /home/gerard/dev/webviewtutorial/test/src/jsi_test.rb.
 Loading Android API...Done.
 Generating methods for Jsi...Done. Methods created: 0
 ```  
+_(See Tip "[Naming issue](#naming-issue)" for class naming convention.)_
+
 This creates the Java file `Jsi.java` and Ruby file `jsi.rb`.
 
-### Execute Ruby from WebView Javascript
+### Execute Ruby from Javascript
 Make these changes to files...
 
 #### Java file ./src/org/ruboto/webviewtutorial/Jsi.java
@@ -523,7 +530,7 @@ $ rake clean debug reinstall log
 ``` 
 Run the app, click each button in the webview to call a Ruby method. Each method displays a toast indicating the method called and the parameters passed.
 
-### Return values from Ruby methods to WebView Javascript
+### Return values from Ruby methods to Javascript
 Make these changes to files...
 
 #### Java file ./src/org/ruboto/webviewtutorial/Jsi.java
@@ -652,7 +659,7 @@ $ rake clean debug reinstall log
 Run the app. Click the new buttons in the webview to call Ruby methods, display a toast, and display the returned values in the page.
 
 ## Evaluation of asynchronous Javascript to obtain a value (solution)
-We can now solve the earlier problem of evaluating asynchronous WebView Javascript from Ruby to obtain a value. Make the following changes to files... 
+We can now solve the earlier problem of evaluating asynchronous Javascript from Ruby to obtain a value. Make the following changes to files... 
 
 #### Ruby file ./src/webviewtutorial_activity.rb
 Add menu action in method `setup_menu`:
@@ -700,7 +707,7 @@ end
 
 ### Bidirectional approach
 
-The approach here is that the activity uses the WebView `evaluateJavascript` method to call WebView Javascript which in turn calls a method of the Javascript interface object registered with `addJavascriptInterface` to send a value back to the activity.
+The approach here is that the activity uses the WebView `evaluateJavascript` method to call Javascript which in turn calls a method of the Javascript interface object registered with `addJavascriptInterface` to send a value back to the activity.
 
 The menu action handler `eval_js_load_image_jsi_size` calls `evaluateJavascript` without a callback object as the return value will not be used. 
 ```ruby
@@ -725,6 +732,14 @@ $ rake clean debug reinstall log
 Run the app. When selected, the new menu action 'Load image jsi size' adds an image to the page and displays a toast containing the correct dimensions for the image.
 
 ## Tips
+
+### Naming issue
+
+The Java reflection responsible for finding the JavascriptInterface method called from Javascript does not handle some naming cases as expected. In particular; JavascriptInterface class names with multiple contiguous uppercase letters and package names with multiple uppercase letters may result in Ruby methods not being found. See Ruboto issue [719](https://github.com/ruboto/ruboto/issues/719) for example.
+To avoid the problem, use this following naming convention:
+
+* The first letter of the JavascriptInterface class name should be the only uppercase letter eg; Myjsi not MyJsi or MyJSI.
+* Do not use underscores in the --package name when creating the Ruboto project to simplify the CamelCase for the package portion of the fully qualified class name.
 
 ### URLs for assets and resources
 
